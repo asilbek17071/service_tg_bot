@@ -21,7 +21,30 @@ cd "$(dirname "$0")"
 JAR="tg_bot.jar"
 PID_FILE="app.pid"
 mkdir -p logs
-JAVA_BIN="${JAVA_HOME:+$JAVA_HOME/bin/}java"
+
+# Locate a Java 21 runtime. Priority:
+#   1) the JRE bundled inside this folder (./jre) -> fully self-contained, needs NO install/sudo
+#   2) an explicit JAVA_HOME
+#   3) java on PATH
+#   4) common install locations
+HERE="$(cd "$(dirname "$0")" && pwd)"
+if [ -x "$HERE/jre/bin/java" ]; then
+  JAVA_BIN="$HERE/jre/bin/java"
+elif [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+  JAVA_BIN="$JAVA_HOME/bin/java"
+elif command -v java >/dev/null 2>&1; then
+  JAVA_BIN="java"
+else
+  JAVA_BIN=""
+  for d in /usr/lib/jvm/*/bin/java /opt/*/bin/java "$HOME"/.local/toolchain/*/bin/java; do
+    [ -x "$d" ] && JAVA_BIN="$d" && break
+  done
+fi
+if [ -z "$JAVA_BIN" ]; then
+  echo "ERROR: Java not found (and no bundled ./jre)." >&2
+  echo "Either keep the bundled jre/ folder next to this script, or set JAVA_HOME." >&2
+  exit 1
+fi
 
 is_running() { [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; }
 
