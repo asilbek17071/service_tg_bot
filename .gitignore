@@ -1,0 +1,9 @@
+# The old two-service project (kept locally for reference only).
+1/
+
+# tg_bot is published as its own git repository — do not track it here.
+tg_bot/
+
+# Toolchain / misc
+*.log
+.DS_Store
