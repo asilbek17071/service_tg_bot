@@ -28,6 +28,12 @@ mkdir -p logs
 #   3) java on PATH
 #   4) common install locations
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# Self-heal: if the bundled JRE is present but lost its execute bit during copy
+# (scp/zip/Windows often strip +x), restore it automatically.
+if [ -f "$HERE/jre/bin/java" ] && [ ! -x "$HERE/jre/bin/java" ]; then
+  chmod +x "$HERE/jre/bin/"* 2>/dev/null
+  chmod +x "$HERE/jre/lib/jspawnhelper" 2>/dev/null
+fi
 if [ -x "$HERE/jre/bin/java" ]; then
   JAVA_BIN="$HERE/jre/bin/java"
 elif [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
